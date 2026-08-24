@@ -19,7 +19,10 @@ async function forward(request: Request, context: { params: Promise<{ path: stri
   } as RequestInit & { duplex: "half" });
   const responseHeaders = new Headers(response.headers);
   responseHeaders.delete("set-cookie");
-  return new Response(response.body, { status: response.status, headers: responseHeaders });
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("content-length");
+  const payload = await response.arrayBuffer();
+  return new Response(payload, { status: response.status, headers: responseHeaders });
 }
 
 export const GET = forward;
