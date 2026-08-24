@@ -1,0 +1,16 @@
+{
+  "name": "kylon-outreach",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev --workspace=@kylon/web",
+    "dev:web": "npm run dev --workspace=@kylon/web",
+    "dev:api": "npm run dev --workspace=@kylon/api",
+    "dev:automation": "npm run dev --workspace=@kylon/automation",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "engines": { "node": ">=20" }
+}

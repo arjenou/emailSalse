@@ -1,0 +1,2 @@
+WORKER_SHARED_SECRET=replace-me
+REQUIRE_API_AUTH=false
