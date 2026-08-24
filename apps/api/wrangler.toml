@@ -1,19 +1,23 @@
-name = "kylon-outreach-api"
+name = "email-salse-api"
 main = "src/index.ts"
 compatibility_date = "2026-08-01"
-account_id = "2e9ce2c37b30771dda0bc7503e02c4c3"
+account_id = "bcee1dedc81484370bd9f868a4561e22"
+
+routes = [
+  { pattern = "email.api.yingmu-tech.com", custom_domain = true }
+]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "kylon-outreach"
-database_id = "eab0cbb5-8379-42e9-a96e-087c9d34172e"
+database_name = "email-salse"
+database_id = "8168cc54-597d-42ea-b1ef-05a8a9ecd0a2"
 
 [[r2_buckets]]
 binding = "EVIDENCE"
-bucket_name = "kylon-outreach-evidence"
+bucket_name = "email-salse-evidence"
 
 [vars]
-APP_ORIGIN = "http://localhost:3000"
+APP_ORIGIN = "https://email.yingmu-tech.com"
 REQUIRE_API_AUTH = "true"
 
 [triggers]

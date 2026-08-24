@@ -44,8 +44,8 @@ npm run dev:automation
 
 ```bash
 cd apps/api
-npx wrangler d1 migrations apply kylon-outreach --local
-npx wrangler d1 execute kylon-outreach --local --file seeds/local_demo.sql
+npx wrangler d1 migrations apply email-salse --local
+npx wrangler d1 execute email-salse --local --file seeds/local_demo.sql
 ```
 
 ## 关键安全约束
@@ -58,9 +58,10 @@ npx wrangler d1 execute kylon-outreach --local --file seeds/local_demo.sql
 
 ## Cloudflare 部署
 
-- Worker API: `https://kylon-outreach-api.wangyunjie1101.workers.dev`
-- D1: `kylon-outreach`（APAC）
-- R2: `kylon-outreach-evidence`（private）
+- Worker API / Public API base URL: `https://email.api.yingmu-tech.com`
+- Worker: `email-salse-api`（dazi1101）
+- D1: `email-salse`（APAC）
+- R2: `email-salse-evidence`（private）
 - Cron: 每分钟检查一次 JST Campaign 计划
 
 生产环境的 `/v1/*` 和 `/internal/*` 均要求 Worker Secret。`/health` 保持公开。前端部署到 Vercel 后，应通过经过用户认证的 Next.js 服务端代理调用 `/v1/*`，不要把 Worker Secret 放进 `NEXT_PUBLIC_*` 环境变量。
