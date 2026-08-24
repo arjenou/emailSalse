@@ -1,13 +1,22 @@
-import { canStartRun } from "@kylon/core";
 import type { Env } from "./env";
 import { HttpError } from "./http";
 
 export async function startCampaign(env: Env, campaignId: string, source: "MANUAL" | "SCHEDULED") {
   const campaign = await env.DB.prepare(
-    `SELECT c.id, c.workspace_id, c.status, c.target_success_count,
-      COALESCE(cb.trial, 0) + COALESCE(cb.subscription, 0) + COALESCE(cb.top_up, 0) AS credits
-     FROM campaigns c LEFT JOIN credit_balances cb ON cb.workspace_id = c.workspace_id WHERE c.id = ?`
-  ).bind(campaignId).first<{ id: string; workspace_id: string; status: string; target_success_count: number; credits: number }>();
+    `SELECT id, workspace_id, status, target_success_count, campaign_context, region,
+      discovery_queries_json, source_urls_json, max_leads
+     FROM campaigns WHERE id = ?`
+  ).bind(campaignId).first<{
+    id: string;
+    workspace_id: string;
+    status: string;
+    target_success_count: number;
+    campaign_context: string | null;
+    region: string;
+    discovery_queries_json: string;
+    source_urls_json: string;
+    max_leads: number;
+  }>();
   if (!campaign) throw new HttpError(404, "CAMPAIGN_NOT_FOUND");
   if (campaign.status === "ARCHIVED") throw new HttpError(409, "CAMPAIGN_ARCHIVED");
 
@@ -15,11 +24,12 @@ export async function startCampaign(env: Env, campaignId: string, source: "MANUA
     "SELECT id FROM campaign_runs WHERE campaign_id = ? AND status = 'ACTIVE' LIMIT 1"
   ).bind(campaignId).first();
   if (active) throw new HttpError(409, "ACTIVE_RUN_EXISTS");
-  if (!canStartRun(campaign.credits, campaign.target_success_count)) {
-    await env.DB.prepare("UPDATE campaigns SET status = 'PAUSED_INSUFFICIENT_CREDITS' WHERE id = ?")
-      .bind(campaignId).run();
-    throw new HttpError(409, "INSUFFICIENT_CREDITS");
-  }
+
+  const products = await env.DB.prepare(
+    `SELECT p.name, p.description, p.advantages, p.service_type
+     FROM products p JOIN campaign_products cp ON cp.product_id = p.id
+     WHERE cp.campaign_id = ?`
+  ).bind(campaignId).all<{ name: string; description: string; advantages: string | null; service_type: string | null }>();
 
   const runId = crypto.randomUUID();
   const jobId = crypto.randomUUID();
@@ -31,8 +41,18 @@ export async function startCampaign(env: Env, campaignId: string, source: "MANUA
     env.DB.prepare("UPDATE campaigns SET status = 'RUNNING', updated_at = unixepoch() WHERE id = ?").bind(campaignId),
     env.DB.prepare(
       `INSERT INTO jobs (id, workspace_id, campaign_id, campaign_run_id, job_type, status, priority, payload_json, available_at, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'DISCOVER_LEADS', 'PENDING', 100, '{}', unixepoch(), unixepoch(), unixepoch())`
-    ).bind(jobId, campaign.workspace_id, campaignId, runId)
+       VALUES (?, ?, ?, ?, 'DISCOVER_LEADS', 'PENDING', 100, ?, unixepoch(), unixepoch(), unixepoch())`
+    ).bind(jobId, campaign.workspace_id, campaignId, runId, JSON.stringify({
+      campaignId,
+      campaignRunId: runId,
+      workspaceId: campaign.workspace_id,
+      context: campaign.campaign_context ?? "",
+      region: campaign.region,
+      queries: JSON.parse(campaign.discovery_queries_json),
+      sourceUrls: JSON.parse(campaign.source_urls_json),
+      maxLeads: campaign.max_leads,
+      products: products.results
+    }))
   ]);
   return { runId, jobId };
 }

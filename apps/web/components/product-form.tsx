@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
 const inputClass = "min-h-11 rounded-xl border border-[var(--line)] bg-[var(--background)] px-3 text-[var(--foreground)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]";
 
 export function ProductForm() {
@@ -17,7 +16,7 @@ export function ProductForm() {
     setError("");
     const data = new FormData(event.currentTarget);
     try {
-      const response = await fetch(`${apiUrl}/v1/products`, {
+      const response = await fetch(`/api/kylon/v1/products`, {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify(Object.fromEntries(data))
       });
@@ -40,7 +39,7 @@ export function ProductForm() {
       <label className="grid gap-2 text-sm font-medium">MOQ<input name="moq" className={inputClass} /></label>
       <label className="grid gap-2 text-sm font-medium">交期<input name="leadTime" className={inputClass} /></label>
     </div>
-    {error && <p role="alert" className="mt-5 text-sm text-[var(--danger)]">{error}</p>}
+    <p role="alert" aria-live="polite" className="mt-5 min-h-5 text-sm text-[var(--danger)]">{error}</p>
     <button disabled={pending} className="mt-6 min-h-11 rounded-xl bg-[var(--foreground)] px-5 text-sm font-semibold text-[var(--background)] transition-transform duration-150 active:scale-[0.98] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">{pending ? "保存中" : "确认并保存"}</button>
   </form>;
 }

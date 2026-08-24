@@ -1,14 +1,15 @@
 import { AppShell } from "@/components/app-shell";
 import { StatusBadge } from "@/components/status-badge";
+import { apiGet } from "@/lib/server-api";
 
-const rows = [
-  ["株式会社クラシコム", "https://kurashicom.jp", "91", "成功", "官网业务与生活杂货、原创商品高度相关", "-1"],
-  ["中川政七商店", "https://www.nakagawa-masashichi.jp", "86", "跳过", "联系页面明确禁止营业联系", "0"],
-  ["株式会社ロフト", "https://www.loft.co.jp", "88", "失败", "提交结果无法确认", "0"]
-];
+export const dynamic = "force-dynamic";
 
-export default function OutreachPage() {
-  return <AppShell active="/dashboard/outreach" title="外联记录" description="展示所有成功、失败和跳过结果。历史记录保留当时的发送人快照和 Campaign 配置版本。">
-    <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)]"><div className="overflow-x-auto"><table className="w-full min-w-[58rem] text-left text-sm"><thead className="bg-[var(--surface-strong)] text-xs text-[var(--muted)]"><tr>{["企业", "Lead Score", "结果", "判断或原因", "Credits"].map((head) => <th key={head} className="px-5 py-3 font-medium">{head}</th>)}</tr></thead><tbody>{rows.map(([company, website, score, status, reason, credit]) => <tr key={company} className="border-t border-[var(--line)]"><td className="px-5 py-4"><p className="font-medium">{company}</p><a href={website} className="mt-1 block text-xs text-[var(--accent-strong)]">{website}</a></td><td className="px-5 py-4 font-mono tabular-nums">{score}</td><td className="px-5 py-4"><StatusBadge tone={status === "成功" ? "success" : status === "失败" ? "danger" : "neutral"}>{status}</StatusBadge></td><td className="max-w-md px-5 py-4 text-pretty text-[var(--muted)]">{reason}</td><td className="px-5 py-4 font-mono tabular-nums">{credit}</td></tr>)}</tbody></table></div></div>
+type Outreach = { id: string; status: "PENDING" | "SUCCESS" | "FAILED" | "SKIPPED"; reason: string | null; company_name: string; website_url: string; lead_score: number; qualification_reason: string | null; evidence_count: number; processed_at: number | null };
+const labels = { PENDING: "待确认", SUCCESS: "成功", FAILED: "失败", SKIPPED: "跳过" } as const;
+
+export default async function OutreachPage() {
+  const { outreach } = await apiGet<{ outreach: Outreach[] }>("/v1/outreach");
+  return <AppShell active="/dashboard/outreach" title="外联记录" description="DRY_RUN 时会保存填写前截图并显示“待确认”，不会点击提交。">
+    <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)]"><div className="overflow-x-auto"><table className="w-full min-w-[56rem] text-left text-sm"><thead className="bg-[var(--surface-strong)] text-xs text-[var(--muted)]"><tr>{["企业", "Lead Score", "结果", "判断或原因", "证据"].map((head) => <th key={head} className="px-5 py-3 font-medium">{head}</th>)}</tr></thead><tbody>{outreach.map((row) => <tr key={row.id} className="border-t border-[var(--line)]"><td className="px-5 py-4"><p className="font-medium">{row.company_name}</p><a href={row.website_url} target="_blank" rel="noreferrer" className="mt-1 block max-w-72 truncate text-xs text-[var(--accent-strong)]">{row.website_url}</a></td><td className="px-5 py-4 font-mono tabular-nums">{row.lead_score}</td><td className="px-5 py-4"><StatusBadge tone={row.status === "SUCCESS" ? "success" : row.status === "FAILED" ? "danger" : "neutral"}>{labels[row.status]}</StatusBadge></td><td className="max-w-md px-5 py-4 text-pretty text-[var(--muted)]">{row.reason || row.qualification_reason || "处理中"}</td><td className="px-5 py-4 font-mono tabular-nums">{row.evidence_count}</td></tr>)}</tbody></table>{outreach.length === 0 && <p className="p-8 text-center text-sm text-[var(--muted)]">还没有处理记录。</p>}</div></div>
   </AppShell>;
 }

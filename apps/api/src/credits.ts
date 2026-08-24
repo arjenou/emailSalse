@@ -37,8 +37,8 @@ export async function recordSuccessfulOutreach(env: Env, input: {
   if (input.evidenceKey) {
     statements.push(env.DB.prepare(
       `INSERT INTO success_evidence (id, outreach_id, bucket, storage_key, created_at)
-       VALUES (?, ?, 'kylon-outreach-evidence', ?, unixepoch())`
-    ).bind(crypto.randomUUID(), input.outreachId, input.evidenceKey));
+       VALUES (?, ?, ?, ?, unixepoch())`
+    ).bind(crypto.randomUUID(), input.outreachId, env.EVIDENCE_BUCKET, input.evidenceKey));
   }
   await env.DB.batch(statements);
   return { charged: true, bucket };

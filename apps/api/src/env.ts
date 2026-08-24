@@ -3,5 +3,6 @@ export interface Env {
   EVIDENCE: R2Bucket;
   APP_ORIGIN: string;
   REQUIRE_API_AUTH: string;
+  EVIDENCE_BUCKET: string;
   WORKER_SHARED_SECRET: string;
 }

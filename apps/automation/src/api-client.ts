@@ -1,4 +1,4 @@
-import type { Job } from "@kylon/core";
+import type { EvidenceType, Job } from "@kylon/core";
 
 export class ApiClient {
   constructor(private baseUrl: string, private token: string) {}
@@ -28,5 +28,28 @@ export class ApiClient {
 
   fail(jobId: string, workerId: string, code: string, message: string) {
     return this.post("/internal/jobs/fail", { jobId, workerId, code, message });
+  }
+
+  discoveryResults(jobId: string, value: unknown) {
+    return this.post<{ enqueued: number }>(`/internal/jobs/${jobId}/discovery-results`, value);
+  }
+
+  qualificationResult(jobId: string, value: unknown) {
+    return this.post<{ enqueued: boolean; outreachId?: string }>(`/internal/jobs/${jobId}/qualification-result`, value);
+  }
+
+  outreachResult(jobId: string, value: unknown) {
+    return this.post(`/internal/jobs/${jobId}/outreach-result`, value);
+  }
+
+  async uploadEvidence(jobId: string, workerId: string, outreachId: string, type: EvidenceType, bytes: Buffer) {
+    const response = await fetch(`${this.baseUrl}/internal/jobs/${jobId}/evidence/${outreachId}/${type}`, {
+      method: "PUT",
+      headers: { authorization: `Bearer ${this.token}`, "x-worker-id": workerId, "content-type": "image/png" },
+      body: Uint8Array.from(bytes)
+    });
+    const result = await response.json() as { key?: string; error?: string };
+    if (!response.ok) throw new Error(result.error ?? `EVIDENCE_API_${response.status}`);
+    return result;
   }
 }

@@ -1,2 +1,2 @@
-WORKER_SHARED_SECRET=replace-me
+WORKER_SHARED_SECRET=replace-with-the-same-worker-secret
 REQUIRE_API_AUTH=false

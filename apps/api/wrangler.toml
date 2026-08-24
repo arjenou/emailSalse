@@ -19,6 +19,7 @@ bucket_name = "email-salse-evidence"
 [vars]
 APP_ORIGIN = "https://email.yingmu-tech.com"
 REQUIRE_API_AUTH = "true"
+EVIDENCE_BUCKET = "email-salse-evidence"
 
 [triggers]
 crons = ["* * * * *"]

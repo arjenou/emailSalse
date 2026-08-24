@@ -22,7 +22,7 @@ while (!abort.signal.aborted) {
   try {
     job = await api.claim(workerId);
     if (job) {
-      await execute(job, { dryRun });
+      await execute(job, { dryRun, workerId, api });
       await api.complete(job.id, workerId);
     }
   } catch (error) {

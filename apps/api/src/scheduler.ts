@@ -51,8 +51,7 @@ export async function runScheduler(env: Env, scheduledAt: Date) {
       await updateFire(env, fireId, "CREATED", run.runId, null);
     } catch (error) {
       const code = error instanceof HttpError ? error.code : "SCHEDULER_ERROR";
-      const status = code === "ACTIVE_RUN_EXISTS" ? "SKIPPED_ACTIVE_RUN"
-        : code === "INSUFFICIENT_CREDITS" ? "INSUFFICIENT_CREDITS" : "ERROR";
+      const status = code === "ACTIVE_RUN_EXISTS" ? "SKIPPED_ACTIVE_RUN" : "ERROR";
       await updateFire(env, fireId, status, null, code);
     }
   }

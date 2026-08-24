@@ -4,8 +4,6 @@ import { useState } from "react";
 import { Pause, Play } from "@phosphor-icons/react";
 import { cn } from "@/lib/cn";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
-
 export function CampaignActions({ campaignId, initialStatus }: { campaignId: string; initialStatus: "RUNNING" | "PAUSED" }) {
   const [status, setStatus] = useState(initialStatus);
   const [pending, setPending] = useState(false);
@@ -15,7 +13,7 @@ export function CampaignActions({ campaignId, initialStatus }: { campaignId: str
     setPending(true);
     setError("");
     try {
-      const response = await fetch(`${apiUrl}/v1/campaigns/${campaignId}/${action}`, { method: "POST" });
+      const response = await fetch(`/api/kylon/v1/campaigns/${campaignId}/${action}`, { method: "POST" });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error ?? "操作失败");
       setStatus(action === "start" ? "RUNNING" : "PAUSED");
@@ -28,7 +26,7 @@ export function CampaignActions({ campaignId, initialStatus }: { campaignId: str
 
   const isRunning = status === "RUNNING";
   return (
-    <div>
+      <div aria-live="polite">
       <button
         type="button"
         disabled={pending}

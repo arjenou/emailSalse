@@ -8,6 +8,8 @@ export type RunStatus = "ACTIVE" | "COMPLETED" | "ENDED" | "CANCELLED";
 export type RunSource = "SCHEDULED" | "MANUAL" | "CONFIG_CHANGED" | "WORKSPACE_CONFIG_CHANGED";
 export type JobStatus = "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "CANCELLED";
 export type OutreachStatus = "SUCCESS" | "FAILED" | "SKIPPED";
+export type JobType = "DISCOVER_LEADS" | "QUALIFY_LEAD" | "SUBMIT_OUTREACH";
+export type EvidenceType = "BEFORE_SUBMIT" | "CONFIRMATION" | "COMPLETED" | "ERROR";
 
 export interface Job<T = unknown> {
   id: string;
@@ -15,7 +17,7 @@ export interface Job<T = unknown> {
   campaignId: string | null;
   campaignRunId: string | null;
   outreachId: string | null;
-  jobType: string;
+  jobType: JobType;
   status: JobStatus;
   payload: T;
   attemptCount: number;
